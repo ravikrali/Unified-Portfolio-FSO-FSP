@@ -124,6 +124,8 @@ function App() {
   }
 
   const nav = { setView: goTo, goBack, loadEngagement, setActiveZoneId, refresh, openMetricDialog: setMetricDialog };
+  const portfolioViews = ["dashboard", "zone", "portfolio", "agile"];
+  const showAiSearch = payload && portfolioViews.includes(view);
 
   return (
     <div className="app-shell">
@@ -136,7 +138,7 @@ function App() {
         canGoBack={viewHistory.length > 0 || (user && view !== "home")}
         goBack={goBack}
       />
-      {user && <GlobalAiSearch />}
+      {showAiSearch && <GlobalAiSearch />}
       {loading && <div className="loading-line" />}
       {view === "landing" && <Landing onLogin={login} onMock={() => loadEngagement("eng-mock")} />}
       {view === "signin" && <SignIn onLogin={login} />}
@@ -338,7 +340,7 @@ function Landing({ onLogin, onMock }) {
           </p>
           <div className="hero-actions">
             <button className="button primary" onClick={() => onLogin()}>Get started</button>
-            <button className="button secondary" onClick={onMock}>View mock portfolio</button>
+            <button className="button secondary" onClick={onMock}>View Mock Portfolio</button>
           </div>
         </div>
         <AIPortfolioAnimation />
