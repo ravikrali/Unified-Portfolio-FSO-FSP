@@ -46,6 +46,8 @@ const api = {
   },
 };
 
+const emptyPortfolio = { sponsors: [], studies: [], fspRequirements: [], source: "" };
+
 function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
   const [view, setView] = useState("landing");
@@ -54,6 +56,7 @@ function App() {
   const [bootstrap, setBootstrap] = useState({ engagements: [], zones: [] });
   const [payload, setPayload] = useState(null);
   const [activeZoneId, setActiveZoneId] = useState("scoping-pricing");
+  const [activeServiceLine, setActiveServiceLine] = useState("fso");
   const [loading, setLoading] = useState(false);
   const [metricDialog, setMetricDialog] = useState(null);
 
@@ -104,6 +107,7 @@ function App() {
       const next = await api.get(`/api/engagements/${id}`);
       setPayload(next);
       setActiveZoneId(next.processZones?.[0]?.id || "scoping-pricing");
+      setActiveServiceLine("fso");
       goTo(nextView);
     } finally {
       setLoading(false);
@@ -123,8 +127,8 @@ function App() {
     }
   }
 
-  const nav = { setView: goTo, goBack, loadEngagement, setActiveZoneId, refresh, openMetricDialog: setMetricDialog };
-  const portfolioViews = ["dashboard", "zone", "portfolio", "agile"];
+  const nav = { setView: goTo, goBack, loadEngagement, setActiveZoneId, setActiveServiceLine, refresh, openMetricDialog: setMetricDialog };
+  const portfolioViews = ["dashboard", "zone", "portfolio", "agile", "serviceLine"];
   const showAiSearch = payload && portfolioViews.includes(view);
 
   return (
@@ -153,6 +157,7 @@ function App() {
       {view === "create" && <CreateEngagement zones={bootstrap.zones} onCreated={(next) => { setPayload(next); goTo("dashboard"); }} />}
       {view === "dashboard" && payload && <Dashboard payload={payload} nav={nav} />}
       {view === "zone" && payload && <ZoneDashboard payload={payload} zoneId={activeZoneId} nav={nav} />}
+      {view === "serviceLine" && payload && <ServiceLineDetail payload={payload} serviceLine={activeServiceLine} nav={nav} />}
       {view === "portfolio" && payload && <PortfolioData payload={payload} nav={nav} />}
       {view === "agile" && payload && <AgilePlan payload={payload} nav={nav} />}
       {metricDialog && (
@@ -552,7 +557,14 @@ function CreateEngagement({ onCreated }) {
 
 function Dashboard({ payload, nav }) {
   const { engagement, metrics, notifications, tasks, processZones } = payload;
+  const [portfolio, setPortfolio] = useState(emptyPortfolio);
   const portfolioMetrics = metrics.filter((m) => !m.process_zone_id).slice(0, 4);
+  const serviceSummary = buildServiceLineSummary(portfolio);
+
+  useEffect(() => {
+    api.get(`/api/portfolio/${engagement.id}`).then(setPortfolio).catch(console.error);
+  }, [engagement.id]);
+
   const zoneMetricSummary = processZones.reduce((acc, zone) => {
     acc[zone.id] = {
       metricCount: metrics.filter((item) => item.process_zone_id === zone.id).length,
@@ -563,6 +575,10 @@ function Dashboard({ payload, nav }) {
   const openZone = (zoneId) => {
     nav.setActiveZoneId(zoneId);
     nav.setView("zone");
+  };
+  const openServiceLine = (serviceLine) => {
+    nav.setActiveServiceLine(serviceLine);
+    nav.setView("serviceLine");
   };
   return (
     <main className="workspace">
@@ -586,6 +602,10 @@ function Dashboard({ payload, nav }) {
           />
         ))}
       </div>
+      <section className="service-line-grid" aria-label="Service line portfolio summary">
+        <ServiceLineCard summary={serviceSummary.fso} onOpen={() => openServiceLine("fso")} />
+        <ServiceLineCard summary={serviceSummary.fsp} onOpen={() => openServiceLine("fsp")} />
+      </section>
       <div className="dashboard-grid">
         <section className="panel span-2">
           <div className="panel-title"><Activity size={18} /> Process-zone health</div>
@@ -805,6 +825,137 @@ function AiSearch({ compact = false }) {
   );
 }
 
+function ServiceLineCard({ summary, onOpen }) {
+  return (
+    <button className={`service-line-card ${summary.id}`} type="button" onClick={onOpen}>
+      <span className="service-line-kicker">{summary.eyebrow}</span>
+      <div className="service-line-card-head">
+        <strong>{summary.title}</strong>
+        <b>{summary.contractValue}</b>
+      </div>
+      <p>{summary.description}</p>
+      <div className="service-line-card-metrics">
+        <span><b>{summary.totalCount}</b><small>{summary.totalLabel}</small></span>
+        <span><b>{summary.primaryValue}</b><small>{summary.primaryLabel}</small></span>
+        <span><b>{summary.secondaryValue}</b><small>{summary.secondaryLabel}</small></span>
+      </div>
+      <div className="status-chip-row">
+        {summary.statusRows.map((item) => (
+          <span key={item.label}>{item.label} <b>{item.count}</b></span>
+        ))}
+      </div>
+    </button>
+  );
+}
+
+function ServiceLineDetail({ payload, serviceLine, nav }) {
+  const [portfolio, setPortfolio] = useState(emptyPortfolio);
+
+  useEffect(() => {
+    api.get(`/api/portfolio/${payload.engagement.id}`).then(setPortfolio).catch(console.error);
+  }, [payload.engagement.id]);
+
+  const summary = buildServiceLineSummary(portfolio)[serviceLine] || buildServiceLineSummary(portfolio).fso;
+  const isFso = serviceLine === "fso";
+  const records = isFso ? portfolio.studies : portfolio.fspRequirements;
+  const sponsorRows = buildSponsorServiceRows(portfolio, serviceLine);
+  const signalRows = buildSignalRows(records);
+
+  return (
+    <main className="workspace">
+      <PageTitle
+        eyebrow={`${summary.title} service line`}
+        title={`${summary.title} portfolio details`}
+        subtitle={isFso
+          ? "Full-service study portfolio view for sponsor exposure, study status, operational signals, and AI-guided actions."
+          : "Functional-service requirement view for contracted work, staffing demand, geography, risk status, and AI-guided actions."}
+      />
+      <section className="portfolio-health-card service-line-hero">
+        <div>
+          <span>{summary.eyebrow}</span>
+          <strong>{summary.contractValue}</strong>
+          <p>{summary.description}</p>
+        </div>
+        <div className="service-line-hero-metrics">
+          <span><b>{summary.totalCount}</b><small>{summary.totalLabel}</small></span>
+          <span><b>{summary.primaryValue}</b><small>{summary.primaryLabel}</small></span>
+          <span><b>{summary.secondaryValue}</b><small>{summary.secondaryLabel}</small></span>
+        </div>
+      </section>
+      <div className="dashboard-grid">
+        <section className="panel span-2">
+          <div className="panel-title"><Users size={18} /> Sponsor concentration</div>
+          <div className="service-sponsor-grid">
+            {sponsorRows.map((row) => (
+              <article className="service-sponsor-card" key={row.id}>
+                <strong>{row.name}</strong>
+                <span>{row.contractValue}</span>
+                <small>{row.recordLabel} | Risk score {row.riskScore}</small>
+                <div className="status-chip-row">
+                  {row.statusRows.map((item) => <span key={item.label}>{item.label} <b>{item.count}</b></span>)}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+        <section className="panel">
+          <div className="panel-title"><Activity size={18} /> Process-zone signals</div>
+          <Stack
+            items={signalRows}
+            empty="No process-zone signals yet."
+            render={(item) => (
+              <article className="list-item">
+                <strong>{item.id}</strong>
+                <span>{item.count} linked {isFso ? "studies" : "requirements"}</span>
+                <em>{item.share}% of service line</em>
+              </article>
+            )}
+          />
+        </section>
+      </div>
+      <section className="panel">
+        <div className="panel-title"><ClipboardList size={18} /> {isFso ? "FSO study portfolio" : "FSP requirement portfolio"}</div>
+        <div className="study-table">
+          <div className={`study-row service-detail-row header ${isFso ? "fso" : "fsp"}`}>
+            <span>{isFso ? "Study ID" : "Req ID"}</span>
+            <span>{isFso ? "Study / scope" : "Requirement / role"}</span>
+            <span>Status</span>
+            <span>{isFso ? "Timeline" : "Demand"}</span>
+            <span>Portfolio manager signal</span>
+            <span>AI recommendation</span>
+          </div>
+          {records.map((item) => (
+            <div className={`study-row service-detail-row ${isFso ? "fso" : "fsp"}`} key={item.id}>
+              <span>{isFso ? item.nct_id : item.id}</span>
+              <span>
+                {item.title}
+                <small>{isFso ? `${item.phase} | ${item.condition} | Enrollment ${item.enrollment || "TBD"}` : `${item.role_type} | ${item.geography}`}</small>
+              </span>
+              <span>{item.status}</span>
+              <span>{isFso ? `${item.start_date} to ${item.completion_date}` : `${item.fte_need} FTE | ${item.start_date} to ${item.end_date}`}</span>
+              <span>{item.process_zone_signal}</span>
+              <span>{item.ai_recommendation}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section className="panel full-width-section">
+        <div className="panel-title"><Bot size={18} /> Portfolio manager focus</div>
+        <div className="action-card-grid">
+          {summary.managerFocus.map((item) => (
+            <article className="list-item" key={item.title}>
+              <strong>{item.title}</strong>
+              <span>{item.detail}</span>
+              <em>{item.priority}</em>
+            </article>
+          ))}
+        </div>
+      </section>
+      <button className="button secondary" onClick={() => nav.setView("dashboard")}>Back to Portfolio Health</button>
+    </main>
+  );
+}
+
 function ZoneGauge({ zone, onOpen }) {
   const score = Math.max(0, Math.min(100, Number(zone.health_score || 0)));
   const needleRotation = score * 1.8 - 90;
@@ -970,6 +1121,129 @@ function TaskItem({ item, onAction }) {
       <em>{item.priority}</em>
     </article>
   );
+}
+
+function buildServiceLineSummary(portfolio = emptyPortfolio) {
+  const studies = portfolio.studies || [];
+  const fspRequirements = portfolio.fspRequirements || [];
+  const sponsorValue = totalSponsorValue(portfolio.sponsors || []);
+  const fsoStatuses = countBy(studies, (item) => item.status);
+  const fspStatuses = countBy(fspRequirements, (item) => item.status);
+  const activeStudies = (fsoStatuses.ACTIVE || 0) + (fsoStatuses.RECRUITING || 0);
+  const fspFte = fspRequirements.reduce((sum, item) => sum + Number(item.fte_need || 0), 0);
+  const contractedFsp = fspRequirements.filter((item) => !["Open", "Rejected"].includes(item.status)).length;
+
+  return {
+    fso: {
+      id: "fso",
+      eyebrow: "Full-service outsourcing",
+      title: "FSO",
+      description: "Full-service clinical study accountability across sponsor portfolios, study status, scope signals, and contract value exposure.",
+      contractValue: formatMoney(sponsorValue),
+      totalLabel: "FSO studies",
+      totalCount: studies.length,
+      primaryLabel: "Active / recruiting",
+      primaryValue: activeStudies,
+      secondaryLabel: "Sponsors",
+      secondaryValue: portfolio.sponsors?.length || 0,
+      statusRows: [
+        { label: "Recruiting", count: fsoStatuses.RECRUITING || 0 },
+        { label: "Active", count: fsoStatuses.ACTIVE || 0 },
+        { label: "Completed", count: fsoStatuses.COMPLETED || 0 },
+      ],
+      managerFocus: [
+        { title: "Scope drift and amendment readiness", detail: "Review studies tied to Oversight & Scope Changes and Contracts & Amendments before month-close governance.", priority: "High" },
+        { title: "Resource pressure", detail: "Watch active and recruiting studies with Resource Management or Talent Acquisition signals for CRA, writing, and site support demand.", priority: "High" },
+        { title: "Financial closeout", detail: "Use completed studies to validate forecast-to-actual, billing exceptions, and residual obligations.", priority: "Medium" },
+        { title: "Sponsor concentration", detail: "Compare sponsor value, active study count, and risk score before prioritizing steering committee actions.", priority: "Medium" },
+      ],
+    },
+    fsp: {
+      id: "fsp",
+      eyebrow: "Functional-service provider",
+      title: "FSP",
+      description: "Functional-service requirements by sponsor, role family, geography, FTE demand, contracting state, and execution risk.",
+      contractValue: formatMoney(sponsorValue),
+      totalLabel: "FSP requirements",
+      totalCount: fspRequirements.length,
+      primaryLabel: "Under contract",
+      primaryValue: contractedFsp,
+      secondaryLabel: "FTE demand",
+      secondaryValue: fspFte.toFixed(1),
+      statusRows: [
+        { label: "Open", count: fspStatuses.Open || 0 },
+        { label: "In progress", count: fspStatuses["In progress"] || 0 },
+        { label: "At risk", count: fspStatuses["At risk"] || 0 },
+        { label: "Rejected", count: fspStatuses.Rejected || 0 },
+      ],
+      managerFocus: [
+        { title: "Contracting throughput", detail: "Separate open requirements from under-contract work so finance, staffing, and delivery owners see the same demand picture.", priority: "High" },
+        { title: "At-risk capacity", detail: "Prioritize role requirements marked at risk, especially where geography and FTE demand constrain fulfillment.", priority: "High" },
+        { title: "Utilization and margin control", detail: "Track variable FTE work against billing and utilization assumptions to avoid under-recovery.", priority: "Medium" },
+        { title: "Role-family demand", detail: "Use role type, geography, and dates to shape recruiting, internal matching, and external sourcing decisions.", priority: "Medium" },
+      ],
+    },
+  };
+}
+
+function buildSponsorServiceRows(portfolio = emptyPortfolio, serviceLine = "fso") {
+  const records = serviceLine === "fso" ? portfolio.studies || [] : portfolio.fspRequirements || [];
+  return (portfolio.sponsors || []).map((sponsor) => {
+    const sponsorRecords = records.filter((item) => item.sponsor_id === sponsor.id);
+    const statuses = countBy(sponsorRecords, (item) => item.status);
+    const fte = sponsorRecords.reduce((sum, item) => sum + Number(item.fte_need || 0), 0);
+    const statusRows = serviceLine === "fso"
+      ? [
+          { label: "Recruiting", count: statuses.RECRUITING || 0 },
+          { label: "Active", count: statuses.ACTIVE || 0 },
+          { label: "Completed", count: statuses.COMPLETED || 0 },
+        ]
+      : [
+          { label: "Open", count: statuses.Open || 0 },
+          { label: "In progress", count: statuses["In progress"] || 0 },
+          { label: "At risk", count: statuses["At risk"] || 0 },
+        ];
+    return {
+      id: sponsor.id,
+      name: sponsor.name,
+      riskScore: sponsor.risk_score,
+      contractValue: sponsor.portfolio_value,
+      recordLabel: serviceLine === "fso" ? `${sponsorRecords.length} studies` : `${sponsorRecords.length} reqs | ${fte.toFixed(1)} FTE`,
+      statusRows,
+    };
+  });
+}
+
+function buildSignalRows(records = []) {
+  const counts = countBy(records, (item) => item.process_zone_signal || "Unassigned");
+  return Object.entries(counts)
+    .map(([id, count]) => ({ id, count, share: records.length ? Math.round((count / records.length) * 100) : 0 }))
+    .sort((a, b) => b.count - a.count);
+}
+
+function countBy(items = [], getKey) {
+  return items.reduce((acc, item) => {
+    const key = getKey(item) || "Unknown";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function totalSponsorValue(sponsors = []) {
+  return sponsors.reduce((sum, sponsor) => sum + parseMoney(sponsor.portfolio_value), 0);
+}
+
+function parseMoney(value) {
+  const text = String(value || "").trim().replace("$", "");
+  const number = Number.parseFloat(text);
+  if (Number.isNaN(number)) return 0;
+  if (text.toUpperCase().includes("B")) return number * 1000;
+  return number;
+}
+
+function formatMoney(valueInMillions) {
+  if (valueInMillions >= 1000) return `$${(valueInMillions / 1000).toFixed(1)}B`;
+  return `$${valueInMillions.toFixed(1)}M`;
 }
 
 function safeJson(value) {
