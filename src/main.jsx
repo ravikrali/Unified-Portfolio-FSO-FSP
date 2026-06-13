@@ -181,6 +181,15 @@ function App() {
 }
 
 function TopBar({ theme, toggleTheme, user, view, setView, canGoBack, goBack }) {
+  const navItems = user
+    ? [
+        ["home", "Home"],
+        ["dashboard", "Portfolio Health"],
+        ["portfolio", "Portfolio"],
+      ]
+    : [];
+  const activeNavIndex = Math.max(0, navItems.findIndex(([id]) => id === view));
+
   return (
     <header className="topbar">
       <button className="brand-button" onClick={() => setView("landing")} aria-label="Go to landing">
@@ -195,11 +204,16 @@ function TopBar({ theme, toggleTheme, user, view, setView, canGoBack, goBack }) 
           <ChevronRight size={16} className="back-chevron" /> Back
         </button>
       )}
-      <nav className="nav-links">
-        {user && <button onClick={() => setView("home")} className={view === "home" ? "active" : ""}>Home</button>}
-        {user && <button onClick={() => setView("dashboard")} className={view === "dashboard" ? "active" : ""}>Portfolio Health</button>}
-        {user && <button onClick={() => setView("portfolio")} className={view === "portfolio" ? "active" : ""}>Portfolio</button>}
-      </nav>
+      {user && (
+        <nav className="nav-links" style={{ "--active-index": activeNavIndex, "--nav-count": navItems.length }}>
+          <span className="nav-glider" aria-hidden="true" />
+          {navItems.map(([id, label]) => (
+            <button key={id} onClick={() => setView(id)} className={view === id ? "active" : ""}>
+              {label}
+            </button>
+          ))}
+        </nav>
+      )}
       <div className="top-actions">
         <button className="icon-button" onClick={toggleTheme} title="Toggle theme">
           {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
@@ -326,22 +340,16 @@ function PortfolioData({ payload, nav }) {
 }
 
 function Landing({ onLogin, onMock }) {
-  const benefits = [
-    ["Hybrid operating model", "Unify full-service accountability and functional-service flexibility with standard handoffs."],
-    ["Process-zone dashboards", "Make scoping, contracts, resource, talent, people, finance, and oversight measurable."],
-    ["Agentic transformation", "Turn KPI comments, assignments, and portfolio signals into prioritized action plans."],
-    ["Database-first prototype", "Start locally with seeded portfolio data, then evolve toward real integrations."],
-  ];
   return (
     <main className="landing">
       <section className="hero ai-saas-hero">
         <div className="hero-copy">
-          <p className="announcement"><Sparkles size={14} /> AI-powered portfolio intelligence for hybrid clinical operations</p>
-          <p className="eyebrow">Hybrid FSO/FSP portfolio management for CRO transformation</p>
-          <h1>Turn clinical portfolio complexity into confident operating decisions.</h1>
+          <p className="announcement"><Sparkles size={14} /> AI-first operating layer for hybrid clinical delivery</p>
+          <p className="eyebrow">Unified FSO-FSP portfolio management</p>
+          <h1>One portfolio command center for every delivery model.</h1>
           <p className="hero-subtitle">
-            Clinical Portfolio Management Solutions helps CRO teams convert hybrid strategy into process-zone dashboards,
-            KPI controls, collaboration, and AI-ready agile implementation plans.
+            Bring full-service accountability, functional-service flexibility, and hybrid programs into one AI-powered
+            platform so CRO leaders can manage operations at the portfolio level instead of chasing siloed workflows.
           </p>
           <div className="hero-actions">
             <button className="button primary" onClick={() => onLogin()}>Get started</button>
@@ -350,14 +358,149 @@ function Landing({ onLogin, onMock }) {
         </div>
         <AIPortfolioAnimation />
       </section>
+      <DeliveryModelSection />
       <OpsImpactSection />
+      <ProcessZoneSection />
+      <AiUseCaseSection />
+      <RoadmapSection />
+    </main>
+  );
+}
+
+function DeliveryModelSection() {
+  const models = [
+    ["FSP", "Functional Service Provider", "Role and function-specific outsourcing embedded in sponsor operations for skill gaps, volume needs, and local delivery."],
+    ["Hybrid", "Mixed-Model Portfolio Delivery", "A deliberate combination of FSO and FSP services optimized by function, study type, geography, and strategic importance."],
+    ["FSO", "Full Service Outsourcing", "End-to-end clinical trial delivery with CRO-owned accountability for program execution, quality, milestones, and outcomes."],
+  ];
+  return (
+    <section className="delivery-band">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">One delivery portfolio</p>
+          <h2>Multiple delivery models, governed as one operating system.</h2>
+        </div>
+        <p>
+          The platform preserves each model's strengths while creating shared visibility for scope, pricing,
+          resources, talent, finance, and oversight.
+        </p>
+      </div>
+      <div className="model-grid">
+        {models.map(([label, title, body], index) => (
+          <article className={`model-card model-${index + 1}`} key={label}>
+            <span>{label}</span>
+            <h3>{title}</h3>
+            <p>{body}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ProcessZoneSection() {
+  const zones = [
+    ["A", "Scoping & Pricing", "Dynamic pricing intelligence and automated RFP scoping turn inconsistent opportunity data into repeatable commercial decisions."],
+    ["B", "Contracts & Amendments", "Clause intelligence and scope drift warnings reduce ambiguity, revenue leakage, and amendment lag."],
+    ["C", "Resource Management", "A single supply-demand view supports intelligent matching, predictive forecasting, and cross-model utilization balance."],
+    ["D", "Talent Acquisition", "AI skills matching prioritizes THRIVE/RISE mobility, hybrid intake compliance, and faster role placement."],
+    ["E", "People Management", "Matrix governance, onboarding pathways, and retention monitoring support employees moving across FSO and FSP."],
+    ["F", "Finance & Revenue", "Revenue recognition and billing anomaly controls connect hybrid obligations to clean financial reporting."],
+    ["G", "Program Oversight", "Integrated health scoring combines delivery, risk, scope, resource, and finance signals for proactive governance."],
+  ];
+  return (
+    <section className="section zone-story-section">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Seven process zones</p>
+          <h2>From siloed execution to portfolio-level control.</h2>
+        </div>
+        <p>
+          Each zone moves from defined or standardized process maturity toward integrated operations first,
+          then optimized AI enablement as the data foundation matures.
+        </p>
+      </div>
+      <div className="landing-zone-grid">
+        {zones.map(([letter, title, body]) => (
+          <article className="landing-zone-card" key={letter}>
+            <span>{letter}</span>
+            <h3>{title}</h3>
+            <p>{body}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AiUseCaseSection() {
+  const cases = [
+    ["Pricing & Scoping", "Recommend optimal hybrid pricing and extract FSO/FSP scope from RFPs."],
+    ["Resource AI", "Match employees to hybrid demand using skills, experience, availability, and model eligibility."],
+    ["People Intelligence", "Detect attrition risk and personalize onboarding for cross-model transitions."],
+    ["Financial Controls", "Flag revenue recognition anomalies, billing gaps, rate-card mismatches, and duplicate charges."],
+    ["Delivery Oversight", "Detect scope drift and generate program health scores with recommended escalation paths."],
+  ];
+  return (
+    <section className="ai-use-case-band">
+      <div className="ai-use-case-copy">
+        <p className="eyebrow">AI-first operating model</p>
+        <h2>AI is the connective layer across every process zone.</h2>
+        <p>
+          The platform turns CRM, contract, resourcing, HR, finance, BI, and delivery data into a shared portfolio
+          intelligence layer for earlier decisions and cleaner handoffs.
+        </p>
+      </div>
+      <div className="ai-use-case-grid">
+        {cases.map(([title, body], index) => (
+          <article className="ai-use-case-card" key={title} style={{ "--delay": `${index * 0.12}s` }}>
+            <Bot size={18} />
+            <h3>{title}</h3>
+            <p>{body}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RoadmapSection() {
+  const phases = [
+    ["Phase 1", "Foundation", "0-30 days", "Hybrid opportunity review, CRM tagging, decision rights, billing structures, and assignment matrix."],
+    ["Phase 2", "Integration", "30-90 days", "Solution review, hybrid requisition intake, Workday matrix setup, scope attribution, and finance alignment."],
+    ["Phase 3", "Optimization", "3-6 months", "Employee tagging, cross-system notifications, Employee 360 attributes, THRIVE/RISE screening, and unified dashboards."],
+    ["Phase 4", "AI Enablement", "6-12+ months", "Pricing intelligence, resource matching, demand forecasting, revenue controls, scope drift, and health scoring."],
+  ];
+  return (
+    <section className="section roadmap-section">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Implementation roadmap</p>
+          <h2>Build the operating model in practical, sequenced phases.</h2>
+        </div>
+      </div>
+      <div className="roadmap-track">
+        {phases.map(([phase, title, timing, body]) => (
+          <article className="roadmap-card" key={phase}>
+            <span>{phase}</span>
+            <h3>{title}</h3>
+            <strong>{timing}</strong>
+            <p>{body}</p>
+          </article>
+        ))}
+      </div>
       <section className="section">
         <div className="section-heading">
-          <p className="eyebrow">Approach</p>
-          <h2>Built for the operating work behind transformation</h2>
+          <p className="eyebrow">Application delivery</p>
+          <h2>Operational clarity for every hybrid portfolio decision.</h2>
         </div>
         <div className="feature-grid">
-          {benefits.map(([title, body]) => (
+          {[
+            ["Portfolio workspace", "Manage FSO studies, FSP role requirements, and hybrid signals under one leadership view."],
+            ["Process-zone KPI controls", "Track maturity, health, KPI comments, assignments, and operational exceptions by zone."],
+            ["AI search and actions", "Ask portfolio questions, surface citations, and convert signals into prioritized next steps."],
+            ["Integration-ready architecture", "Start with a seeded local prototype, then evolve toward CRM, RMS, Workday, OPF, BI, and data lake integrations."],
+          ].map(([title, body]) => (
             <article className="feature" key={title}>
               <ShieldCheck size={18} />
               <h3>{title}</h3>
@@ -366,44 +509,53 @@ function Landing({ onLogin, onMock }) {
           ))}
         </div>
       </section>
-    </main>
+    </section>
   );
 }
 
 function AIPortfolioAnimation() {
-  const flow = [
-    ["FSO", "Study oversight", "Scope drift"],
-    ["AI", "Portfolio agent", "Decision signal"],
-    ["FSP", "Functional capacity", "Resource fit"],
-  ];
+  const systemNodes = ["CRM", "Contracts", "RMS", "Workday", "Finance", "BI"];
   return (
     <div className="hero-panel ai-orbit-panel" aria-label="Animated AI portfolio management visualization">
       <div className="dashboard-window">
         <div className="window-dots"><span /><span /><span /></div>
         <div className="search-preview hero-search">
           <Search size={18} />
-          <span>Ask: Which hybrid programs need action before month close?</span>
+          <span>Ask: Which hybrid programs need leadership action this week?</span>
         </div>
-        <div className="ai-flow">
-          {flow.map(([label, title, sub], index) => (
-            <div className={`flow-node node-${index + 1}`} key={label}>
-              <strong>{label}</strong>
-              <span>{title}</span>
-              <small>{sub}</small>
-            </div>
-          ))}
+        <div className="platform-map">
+          <div className="platform-node fso-node">
+            <strong>FSO</strong>
+            <span>Study accountability</span>
+            <small>Milestones, quality, scope</small>
+          </div>
+          <div className="platform-core">
+            <Sparkles size={24} />
+            <strong>AI portfolio layer</strong>
+            <span>Pricing, resources, finance, risk, oversight</span>
+          </div>
+          <div className="platform-node fsp-node">
+            <strong>FSP</strong>
+            <span>Functional capacity</span>
+            <small>Roles, skills, utilization</small>
+          </div>
+          <div className="orbit-ring ring-one" />
+          <div className="orbit-ring ring-two" />
           <div className="pulse-line line-a" />
           <div className="pulse-line line-b" />
         </div>
+        <div className="system-chip-grid">
+          {systemNodes.map((node, index) => <span key={node} style={{ "--delay": `${index * 0.12}s` }}>{node}</span>)}
+        </div>
         <div className="signal-grid dashboard-preview-grid">
-          <MetricMini label="Portfolio health" value="82%" tone="good" />
-          <MetricMini label="Scope drift" value="-31%" tone="good" />
-          <MetricMini label="Forecast lift" value="+18%" tone="watch" />
-          <MetricMini label="QBR actions" value="90%" tone="good" />
+          <MetricMini label="Portfolio health" value="84%" tone="good" />
+          <MetricMini label="Hybrid tagging" value="96%" tone="good" />
+          <MetricMini label="Scope drift" value="7" tone="watch" />
+          <MetricMini label="AI actions" value="18" tone="good" />
         </div>
         <div className="agent-box animated-agent">
           <Bot size={18} />
-          <span>Agent recommendation: convert 3 scope alerts into change-control actions</span>
+          <span>Agent recommendation: convert 3 scope alerts into amendments and rebalance 5 hybrid roles</span>
         </div>
       </div>
     </div>
@@ -412,21 +564,21 @@ function AIPortfolioAnimation() {
 
 function OpsImpactSection() {
   const impacts = [
-    ["FSO operations", "Earlier scope-change detection", "31%", "lower leakage risk"],
-    ["FSP operations", "Capacity and skills matching", "22%", "faster assignment fit"],
-    ["Finance", "Forecast and billing signal quality", "18%", "forecast accuracy lift"],
-    ["Governance", "AI-generated action packs", "40%", "less prep effort"],
+    ["Commercial", "Faster hybrid proposal routing", "A", "Scoping & Pricing"],
+    ["Delivery", "Shared supply and demand visibility", "C", "Resource Management"],
+    ["People", "Internal mobility before external hiring", "D/E", "Talent & People"],
+    ["Governance", "Program health in one operating view", "G", "Program Oversight"],
   ];
   return (
     <section className="ops-impact-section">
       <div className="section-heading impact-heading">
         <div>
-          <p className="eyebrow">AI-powered operating improvement</p>
-          <h2>Portfolio agents connect FSO accountability and FSP flexibility.</h2>
+          <p className="eyebrow">Technology-enabled control</p>
+          <h2>Portfolio agents connect strategy, delivery, and financial integrity.</h2>
         </div>
         <p>
-          Animated control signals show how AI can convert fragmented operational data into earlier decisions,
-          cleaner handoffs, and measurable portfolio outcomes.
+          The landing experience is built around the deck's target state: flexible, scalable, technology-enabled,
+          and ready for AI once core data and workflows are integrated.
         </p>
       </div>
       <div className="impact-visual-grid">
