@@ -8,9 +8,11 @@ import {
   ChevronRight,
   ClipboardList,
   Database,
+  ExternalLink,
   LayoutDashboard,
   MessageSquare,
   Moon,
+  Newspaper,
   Plus,
   Search,
   ShieldCheck,
@@ -48,6 +50,139 @@ const api = {
 
 const emptyPortfolio = { sponsors: [], studies: [], fspRequirements: [], source: "" };
 
+const landingFaqs = [
+  {
+    question: "How do I start using the portfolio command center?",
+    answer: "Choose Get started to sign in locally, then open the mock portfolio or create a new engagement. The mock portfolio is the quickest way to explore the hybrid FSO-FSP workflows.",
+  },
+  {
+    question: "What does the Portfolio Health page show?",
+    answer: "It summarizes overall health, process-zone KPIs, alerts, actions, service-line views, and AI-supported recommendations for hybrid delivery governance.",
+  },
+  {
+    question: "How do I compare FSO and FSP work?",
+    answer: "Open the FSO or FSP service-line cards from Portfolio Health. Each view separates studies, role requirements, sponsor concentration, demand signals, and manager focus areas.",
+  },
+  {
+    question: "How do process zones help my team?",
+    answer: "Process zones organize work around scoping, contracts, resources, talent, people, finance, and oversight so teams can manage handoffs and maturity in one place.",
+  },
+  {
+    question: "Can I add comments or assign KPI follow-ups?",
+    answer: "Yes. Use the comment icon on KPI cards or task items to save an action note and optionally assign it by email. In this prototype, emails are queued in the local outbox.",
+  },
+  {
+    question: "What can the portfolio AI search answer?",
+    answer: "The AI search bar answers from seeded portfolio context, including scope drift, resource allocation, finance, contract readiness, and operational risks.",
+  },
+  {
+    question: "How do I export portfolio data?",
+    answer: "Use the export option in the portfolio workspace to generate an Excel workbook with KPIs, comments, FSO studies, FSP requirements, and agile plan items.",
+  },
+  {
+    question: "Where should I read market updates?",
+    answer: "Open Industry News from the landing page or header. It shows curated external reference cards plus a discussion area for posts and comments.",
+  },
+];
+
+const industryNews = [
+  {
+    id: "ppd-ai-leader-2026",
+    category: "AI in CRO delivery",
+    date: "May 6, 2026",
+    source: "PPD / Thermo Fisher Scientific",
+    title: "Thermo Fisher Scientific's Clinical Research Business Named a Leader Among CROs in 2026 ISG Provider Lens Report for Use of AI in Clinical Trials",
+    summary: "PPD highlights AI-enabled clinical development, data-driven patient engagement, pharmacovigilance, and regulatory affairs as differentiators for the next generation CRO model.",
+    relevance: "Shows how major CROs are embedding AI across clinical development, patient engagement, safety, and regulatory workflows.",
+    href: "https://www.ppd.com/news-item/thermo-fisher-leader-cro-2026-isg-provider-lens-ai-clinical-trials/",
+  },
+  {
+    id: "bms-anthropic-2026",
+    category: "Enterprise pharma AI",
+    date: "May 20, 2026",
+    source: "Bristol Myers Squibb",
+    title: "Bristol Myers Squibb Announces Strategic Agreement with Anthropic to Position Claude Enterprise as the Shared Intelligence Platform Across Its Global Operations",
+    summary: "BMS says it will deploy Claude broadly to more than 30,000 employees across research, clinical development, manufacturing, commercial, and corporate functions.",
+    relevance: "Signals large-scale pharma implementation of AI agents inside clinical, regulatory, data science, and operational workflows.",
+    href: "https://news.bms.com/news/corporate-financial/2026/Bristol-Myers-Squibb-Announces-Strategic-Agreement-with-Anthropic-to-Position-Claude-Enterprise-as-the-Shared-Intelligence-Platform-Across-Its-Global-Operations/default.aspx",
+  },
+  {
+    id: "pharmaphorum-hybrid-fsp-fso",
+    category: "Hybrid FSP-FSO strategy",
+    date: "October 2025",
+    source: "pharmaphorum",
+    title: "Staying on course: How hybrid FSP/FSO models are shaping clinical development",
+    summary: "The article frames hybrid FSP/FSO as a response to trial complexity, cost pressure, patient burden, and sponsor demand for flexibility and control.",
+    relevance: "Directly supports the portfolio strategy of governing FSO, FSP, and hybrid delivery as one operating model.",
+    href: "https://pharmaphorum.com/rd/staying-course-how-hybrid-fspfso-models-are-shaping-clinical-development",
+  },
+  {
+    id: "ppd-fsp-trends-2025",
+    category: "FSP market trends",
+    date: "May 9, 2025",
+    source: "PPD / Thermo Fisher Scientific",
+    title: "The 2025 State of FSP Outsourcing: Challenges, Trends and Opportunities, and the Future of FSP Strategies and Models",
+    summary: "PPD reports increased sponsor reliance on FSP partnerships and hybrid or mixed models to manage trial complexity, cost, innovation, and on-time performance.",
+    relevance: "Provides market evidence for why CROs need portfolio tooling that can coordinate functions, roles, resources, and full-service studies.",
+    href: "https://www.ppd.com/blog/fsp-outsourcing-challenges-trends-opportunities-2025/",
+  },
+  {
+    id: "merative-ai-trends-2026",
+    category: "Clinical trial AI use cases",
+    date: "February 4, 2026",
+    source: "Merative",
+    title: "Trends for 2026: Targeted AI, continuous trials, and navigating uncertainty",
+    summary: "Merative expects use-case-led AI adoption in protocol automation, study database configuration, protocol change management, and risk-based validation.",
+    relevance: "Maps cleanly to AI use cases for protocol interpretation, traceability, quality, validation, and downstream study operations.",
+    href: "https://www.merative.com/blog/clinical-trial-trends-2026",
+  },
+  {
+    id: "novo-openai-2026",
+    category: "Enterprise pharma AI",
+    date: "April 14, 2026",
+    source: "BioPharm International",
+    title: "Novo Nordisk Partners with OpenAI for Drug Discovery",
+    summary: "Coverage of Novo Nordisk's partnership with OpenAI to integrate AI capabilities across global operations, from early discovery through manufacturing and commercial execution.",
+    relevance: "Shows pharma sponsors moving from isolated AI pilots toward enterprise programs spanning R&D, clinical, operations, and commercialization.",
+    href: "https://www.biopharminternational.com/view/novo-nordisk-partners-with-openai",
+  },
+];
+
+const seededIndustryPosts = [
+  {
+    id: "post-1",
+    email: "maya.ops@strathub360.com",
+    content: "Hybrid delivery works best when the portfolio view is model-neutral. I like that this app shows FSO studies and FSP role demand side by side, because the governance question is usually about shared capacity, scope boundaries, and financial exposure rather than labels.",
+    comments: [
+      { id: "comment-1", email: "raj.pm@strathub360.com", text: "Agreed. The service-line split helps without hiding the shared risk signals." },
+    ],
+  },
+  {
+    id: "post-2",
+    email: "elena.ai@strathub360.com",
+    content: "The strongest AI use case here may be demand translation. If the app can map scope, geography, dates, and skills into FTE needs, it can reduce several downstream issues in staffing, pricing, and billing before they become escalations.",
+    comments: [],
+  },
+  {
+    id: "post-3",
+    email: "noah.finance@strathub360.com",
+    content: "Finance teams need early visibility into hybrid obligations. A single dashboard for contract boundaries, resource assumptions, and forecast accuracy would make month-end reviews much less reactive.",
+    comments: [],
+  },
+  {
+    id: "post-4",
+    email: "priya.talent@strathub360.com",
+    content: "The talent acquisition workflow should prioritize internal-first matching for fractional FSP needs. Small assignments are often hard to fill externally, but they are perfect for borrowable talent if manager approvals are visible.",
+    comments: [],
+  },
+  {
+    id: "post-5",
+    email: "sam.governance@strathub360.com",
+    content: "The Industry News page is useful context for executive steering discussions. It connects the operating model changes to what large CROs and pharma companies are already doing with AI and flexible outsourcing.",
+    comments: [],
+  },
+];
+
 function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
   const [view, setView] = useState("landing");
@@ -59,6 +194,7 @@ function App() {
   const [activeServiceLine, setActiveServiceLine] = useState("fso");
   const [loading, setLoading] = useState(false);
   const [metricDialog, setMetricDialog] = useState(null);
+  const [contactOpen, setContactOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -128,7 +264,7 @@ function App() {
   }
 
   const nav = { setView: goTo, goBack, loadEngagement, setActiveZoneId, setActiveServiceLine, refresh, openMetricDialog: setMetricDialog };
-  const portfolioViews = ["dashboard", "zone", "portfolio", "agile", "serviceLine"];
+  const portfolioViews = ["dashboard", "zone", "agile", "serviceLine"];
   const showAiSearch = payload && portfolioViews.includes(view);
 
   return (
@@ -141,10 +277,11 @@ function App() {
         setView={goTo}
         canGoBack={viewHistory.length > 0 || (user && view !== "home")}
         goBack={goBack}
+        onContact={() => setContactOpen(true)}
       />
       {showAiSearch && <GlobalAiSearch />}
       {loading && <div className="loading-line" />}
-      {view === "landing" && <Landing onLogin={login} onMock={() => loadEngagement("eng-mock")} />}
+      {view === "landing" && <Landing onLogin={login} onMock={() => loadEngagement("eng-mock")} onNews={() => goTo("industryNews")} />}
       {view === "signin" && <SignIn onLogin={login} />}
       {view === "home" && (
         <Home
@@ -158,8 +295,9 @@ function App() {
       {view === "dashboard" && payload && <Dashboard payload={payload} nav={nav} />}
       {view === "zone" && payload && <ZoneDashboard payload={payload} zoneId={activeZoneId} nav={nav} />}
       {view === "serviceLine" && payload && <ServiceLineDetail payload={payload} serviceLine={activeServiceLine} nav={nav} />}
-      {view === "portfolio" && payload && <PortfolioData payload={payload} nav={nav} />}
+      {view === "portfolio" && payload && <Dashboard payload={payload} nav={nav} />}
       {view === "agile" && payload && <AgilePlan payload={payload} nav={nav} />}
+      {view === "industryNews" && <IndustryNews />}
       {metricDialog && (
         <MetricCommentDialog
           metric={metricDialog.metric}
@@ -172,6 +310,7 @@ function App() {
           }}
         />
       )}
+      {contactOpen && <ContactDialog onClose={() => setContactOpen(false)} />}
       <footer className="app-footer">
         <span>Clinical Portfolio Management Solutions</span>
         <span>Local prototype with file-backed database</span>
@@ -180,12 +319,12 @@ function App() {
   );
 }
 
-function TopBar({ theme, toggleTheme, user, view, setView, canGoBack, goBack }) {
-  const navItems = user
+function TopBar({ theme, toggleTheme, user, view, setView, canGoBack, goBack, onContact }) {
+  const showWorkspaceNav = user && view !== "landing";
+  const navItems = showWorkspaceNav
     ? [
         ["home", "Home"],
         ["dashboard", "Portfolio Health"],
-        ["portfolio", "Portfolio"],
       ]
     : [];
   const activeNavIndex = Math.max(0, navItems.findIndex(([id]) => id === view));
@@ -199,12 +338,12 @@ function TopBar({ theme, toggleTheme, user, view, setView, canGoBack, goBack }) 
           <small>Portfolio Command Center</small>
         </span>
       </button>
-      {user && (
+      {showWorkspaceNav && (
         <button className="button secondary nav-back" onClick={goBack} disabled={!canGoBack}>
           <ChevronRight size={16} className="back-chevron" /> Back
         </button>
       )}
-      {user && (
+      {showWorkspaceNav && (
         <nav className="nav-links" style={{ "--active-index": activeNavIndex, "--nav-count": navItems.length }}>
           <span className="nav-glider" aria-hidden="true" />
           {navItems.map(([id, label]) => (
@@ -215,6 +354,8 @@ function TopBar({ theme, toggleTheme, user, view, setView, canGoBack, goBack }) 
         </nav>
       )}
       <div className="top-actions">
+        <button className={view === "industryNews" ? "button secondary" : "button ghost"} onClick={() => setView("industryNews")}>Industry</button>
+        <button className="button ghost" onClick={onContact}>Contact Us</button>
         <button className="icon-button" onClick={toggleTheme} title="Toggle theme">
           {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
         </button>
@@ -293,6 +434,13 @@ function PortfolioData({ payload, nav }) {
           ))}
         </div>
       </section>
+    </main>
+  );
+}
+
+function PortfolioSignalSections({ portfolio, processZones = [], onAction }) {
+  return (
+    <>
       <section className="panel">
         <div className="panel-title"><ClipboardList size={18} /> FSO study signals</div>
         <div className="study-table">
@@ -304,7 +452,16 @@ function PortfolioData({ payload, nav }) {
             <span>AI recommendation</span>
           </div>
           {portfolio.studies.map((study) => (
-            <div className="study-row" key={study.id}>
+            <div className="study-row signal-card" key={study.id}>
+              {onAction && (
+                <button
+                  className="metric-action action-comment"
+                  onClick={() => onAction(study, "FSO study")}
+                  title="Comment or assign"
+                >
+                  <MessageSquare size={15} />
+                </button>
+              )}
               <span>{study.nct_id}</span>
               <span>{study.title}<small>{study.phase} | {study.condition} | Enrollment {study.enrollment || "TBD"}</small></span>
               <span>{study.status}</span>
@@ -325,7 +482,16 @@ function PortfolioData({ payload, nav }) {
             <span>AI recommendation</span>
           </div>
           {portfolio.fspRequirements.map((item) => (
-            <div className="study-row" key={item.id}>
+            <div className="study-row signal-card" key={item.id}>
+              {onAction && (
+                <button
+                  className="metric-action action-comment"
+                  onClick={() => onAction(item, "FSP requirement")}
+                  title="Comment or assign"
+                >
+                  <MessageSquare size={15} />
+                </button>
+              )}
               <span>{item.id}</span>
               <span>{item.title}<small>{item.role_type} | {item.geography} | {item.fte_need} FTE | {item.start_date} to {item.end_date}</small></span>
               <span>{item.status}</span>
@@ -335,11 +501,11 @@ function PortfolioData({ payload, nav }) {
           ))}
         </div>
       </section>
-    </main>
+    </>
   );
 }
 
-function Landing({ onLogin, onMock }) {
+function Landing({ onLogin, onMock, onNews }) {
   return (
     <main className="landing">
       <section className="hero ai-saas-hero">
@@ -354,6 +520,7 @@ function Landing({ onLogin, onMock }) {
           <div className="hero-actions">
             <button className="button primary" onClick={() => onLogin()}>Get started</button>
             <button className="button secondary" onClick={onMock}>View Mock Portfolio</button>
+            <button className="button ghost" onClick={onNews}>Industry News</button>
           </div>
         </div>
         <AIPortfolioAnimation />
@@ -363,7 +530,250 @@ function Landing({ onLogin, onMock }) {
       <ProcessZoneSection />
       <AiUseCaseSection />
       <RoadmapSection />
+      <FaqSection />
     </main>
+  );
+}
+
+function IndustryNews() {
+  const hybridCount = industryNews.filter((item) => item.category.includes("FSP")).length;
+  const aiCount = industryNews.filter((item) => item.category.includes("AI")).length;
+  const [posts, setPosts] = useState(seededIndustryPosts);
+  const [postDialogOpen, setPostDialogOpen] = useState(false);
+  const [expandedPostId, setExpandedPostId] = useState(null);
+  const [commentDrafts, setCommentDrafts] = useState({});
+
+  function addPost(post) {
+    setPosts((current) => [post, ...current]);
+    setExpandedPostId(post.id);
+  }
+
+  function addComment(postId) {
+    const draft = commentDrafts[postId] || { email: "", text: "" };
+    if (!draft.email.trim() || !draft.text.trim()) return;
+    setPosts((current) => current.map((post) => (
+      post.id === postId
+        ? {
+            ...post,
+            comments: [
+              ...post.comments,
+              { id: `comment-${Date.now()}`, email: draft.email.trim(), text: draft.text.trim() },
+            ],
+          }
+        : post
+    )));
+    setCommentDrafts((current) => ({ ...current, [postId]: { email: draft.email, text: "" } }));
+  }
+
+  return (
+    <main className="workspace industry-news-page">
+      <PageTitle
+        eyebrow="Industry news"
+        title="Hybrid FSO-FSP strategy and AI implementation signals"
+        subtitle="A curated reference board of recent external articles tracking how CROs and pharma companies are pursuing hybrid delivery models, functional-service growth, and practical AI implementation across clinical development."
+      />
+      <div className="metric-strip">
+        <MetricMini label="External references" value={String(industryNews.length)} tone="good" />
+        <MetricMini label="Hybrid FSP-FSO signals" value={String(hybridCount)} tone="watch" />
+        <MetricMini label="AI implementation signals" value={String(aiCount)} tone="good" />
+        <MetricMini label="Updated through" value="Jun 2026" tone="watch" />
+      </div>
+      <section className="news-hero-panel">
+        <div>
+          <p className="eyebrow">What to watch</p>
+          <h2>Outsourcing strategy and AI are converging into one operating-model question.</h2>
+          <p>
+            Sponsors are mixing FSO accountability with FSP flexibility while CROs and pharma teams push AI from pilots into protocol, data, regulatory, patient engagement, and portfolio workflows.
+          </p>
+        </div>
+        <div className="news-signal-grid">
+          <span><Newspaper size={18} /> Hybrid delivery</span>
+          <span><Bot size={18} /> Agentic AI</span>
+          <span><ShieldCheck size={18} /> Quality and compliance</span>
+          <span><Users size={18} /> Workforce enablement</span>
+        </div>
+      </section>
+      <section className="news-card-grid" aria-label="Industry news reference cards">
+        {industryNews.map((item) => (
+          <a className="news-card" href={item.href} target="_blank" rel="noreferrer" key={item.id}>
+            <span className="news-card-kicker">{item.category}</span>
+            <h2>{item.title}</h2>
+            <p>{item.summary}</p>
+            <div className="news-card-relevance">
+              <strong>Why it matters</strong>
+              <span>{item.relevance}</span>
+            </div>
+            <div className="news-card-footer">
+              <span>{item.source} | {item.date}</span>
+              <ExternalLink size={16} />
+            </div>
+          </a>
+        ))}
+      </section>
+      <section className="industry-posts-section">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Community posts</p>
+            <h2>Discuss what these trends mean for hybrid portfolio operations.</h2>
+          </div>
+          <button className="button primary" onClick={() => setPostDialogOpen(true)}>Create a Post</button>
+        </div>
+        <div className="post-list">
+          {posts.map((post) => {
+            const expanded = expandedPostId === post.id;
+            const draft = commentDrafts[post.id] || { email: "", text: "" };
+            return (
+              <article className={`post-row ${expanded ? "expanded" : ""}`} key={post.id}>
+                <button className="post-summary" onClick={() => setExpandedPostId(expanded ? null : post.id)}>
+                  <strong>{displayName(post.email)}</strong>
+                  <span>{previewLines(post.content)}</span>
+                  <em>{post.comments.length} comments</em>
+                </button>
+                {expanded && (
+                  <div className="post-detail">
+                    <p>{post.content}</p>
+                    <div className="comment-list">
+                      {post.comments.length ? post.comments.map((comment) => (
+                        <article className="comment-item" key={comment.id}>
+                          <strong>{displayName(comment.email)}</strong>
+                          <span>{comment.text}</span>
+                        </article>
+                      )) : <p className="empty">No comments yet.</p>}
+                    </div>
+                    <div className="comment-compose">
+                      <input
+                        value={draft.email}
+                        onChange={(event) => setCommentDrafts((current) => ({ ...current, [post.id]: { ...draft, email: event.target.value } }))}
+                        placeholder="Your email"
+                      />
+                      <textarea
+                        value={draft.text}
+                        onChange={(event) => setCommentDrafts((current) => ({ ...current, [post.id]: { ...draft, text: event.target.value } }))}
+                        placeholder="Add a comment..."
+                      />
+                      <button className="button secondary" onClick={() => addComment(post.id)}>Comment</button>
+                    </div>
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      </section>
+      {postDialogOpen && <CreatePostDialog onClose={() => setPostDialogOpen(false)} onCreate={addPost} />}
+    </main>
+  );
+}
+
+function FaqSection() {
+  const [openIndex, setOpenIndex] = useState(0);
+  return (
+    <section className="faq-section">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">FAQ</p>
+          <h2>How to use this web app.</h2>
+        </div>
+      </div>
+      <div className="faq-list">
+        {landingFaqs.map((item, index) => (
+          <article className="faq-item" key={item.question}>
+            <button onClick={() => setOpenIndex(openIndex === index ? -1 : index)}>
+              <span>{item.question}</span>
+              <ChevronRight size={18} className={openIndex === index ? "open" : ""} />
+            </button>
+            {openIndex === index && <p>{item.answer}</p>}
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CreatePostDialog({ onClose, onCreate }) {
+  const [email, setEmail] = useState("");
+  const [content, setContent] = useState("");
+  const words = wordCount(content);
+  const canSubmit = email.trim() && content.trim() && words <= 300;
+
+  function submit() {
+    if (!canSubmit) return;
+    onCreate({
+      id: `post-${Date.now()}`,
+      email: email.trim(),
+      content: content.trim(),
+      comments: [],
+    });
+    onClose();
+  }
+
+  return (
+    <div className="dialog-backdrop" role="dialog" aria-modal="true">
+      <section className="dialog">
+        <div className="dialog-header">
+          <div>
+            <p className="eyebrow">Create a post</p>
+            <h2>Share an industry perspective</h2>
+          </div>
+          <button className="icon-button" onClick={onClose}>x</button>
+        </div>
+        <label>
+          Email
+          <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" />
+        </label>
+        <label>
+          Post content
+          <textarea value={content} onChange={(event) => setContent(event.target.value)} placeholder="Write up to 300 words..." />
+        </label>
+        <p className={words > 300 ? "dialog-status risk-text" : "dialog-status"}>{words}/300 words</p>
+        <div className="dialog-actions">
+          <button className="button secondary" onClick={onClose}>Cancel</button>
+          <button className="button primary" onClick={submit} disabled={!canSubmit}>Create Post</button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ContactDialog({ onClose }) {
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
+  const canSubmit = email.trim() && message.trim();
+
+  async function submit() {
+    if (!canSubmit) return;
+    const result = await api.post("/api/contact", { email, message });
+    setStatus(result.email ? `Message queued to ${result.email.recipient}.` : "Message submitted.");
+    setTimeout(onClose, 650);
+  }
+
+  return (
+    <div className="dialog-backdrop" role="dialog" aria-modal="true">
+      <section className="dialog">
+        <div className="dialog-header">
+          <div>
+            <p className="eyebrow">Contact Us</p>
+            <h2>Send a message to StratHub360</h2>
+          </div>
+          <button className="icon-button" onClick={onClose}>x</button>
+        </div>
+        <p className="dialog-context">Your message will be sent to contact@strathub360.com.</p>
+        <label>
+          Email
+          <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" />
+        </label>
+        <label>
+          Message
+          <textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder="How can we help?" />
+        </label>
+        {status && <p className="dialog-status">{status}</p>}
+        <div className="dialog-actions">
+          <button className="button secondary" onClick={onClose}>Cancel</button>
+          <button className="button primary" onClick={submit} disabled={!canSubmit}>Send Email</button>
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -769,7 +1179,18 @@ function Dashboard({ payload, nav }) {
         </section>
         <section className="panel">
           <div className="panel-title"><Bell size={18} /> Notifications</div>
-          <Stack items={notifications} render={(item) => <AlertItem item={item} />} />
+          <Stack
+            items={notifications}
+            render={(item) => (
+              <AlertItem
+                item={item}
+                onAction={() => nav.openMetricDialog({
+                  processZoneId: item.process_zone_id || "",
+                  metric: notificationToMetric(item),
+                })}
+              />
+            )}
+          />
         </section>
       </div>
       <section className="panel full-width-section">
@@ -830,6 +1251,14 @@ function Dashboard({ payload, nav }) {
           ))}
         </div>
       </section>
+      <PortfolioSignalSections
+        portfolio={portfolio}
+        processZones={payload.processZones}
+        onAction={(item, type) => nav.openMetricDialog({
+          processZoneId: processZoneIdFromSignal(payload.processZones, item.process_zone_signal),
+          metric: portfolioSignalToMetric(item, type),
+        })}
+      />
     </main>
   );
 }
@@ -911,6 +1340,43 @@ function taskToMetric(item) {
   };
 }
 
+function notificationToMetric(item) {
+  return {
+    id: item.id,
+    name: item.title,
+    value: item.severity,
+    unit: "",
+    target: "Review",
+    trend: item.read_at ? "Read" : "Unread",
+    description: item.message,
+  };
+}
+
+function portfolioSignalToMetric(item, type) {
+  const isFso = type === "FSO study";
+  return {
+    id: item.id,
+    name: `${type}: ${isFso ? item.nct_id : item.id}`,
+    value: item.status,
+    unit: "",
+    target: item.process_zone_signal || "Portfolio signal",
+    trend: isFso ? item.phase || "Study" : `${item.fte_need} FTE`,
+    description: `${item.title}. ${item.ai_recommendation}`,
+  };
+}
+
+function serviceSignalToMetric(item, serviceLine) {
+  return {
+    id: `signal-${serviceLine}-${item.id}`,
+    name: `${serviceLine} process-zone signal: ${item.id}`,
+    value: `${item.count}`,
+    unit: "",
+    target: "Review linked work",
+    trend: `${item.share}% of service line`,
+    description: `${item.count} linked records are currently tied to ${item.id}.`,
+  };
+}
+
 function zoneToMetric(zone, summary = {}) {
   return {
     id: zone.id,
@@ -921,6 +1387,10 @@ function zoneToMetric(zone, summary = {}) {
     trend: `${summary.actionCount || 0} open actions`,
     description: zone.value_statement,
   };
+}
+
+function processZoneIdFromSignal(processZones = [], signalName = "") {
+  return processZones.find((zone) => zone.name === signalName || zone.id === signalName)?.id || "";
 }
 
 function AgilePlan({ payload }) {
@@ -1057,6 +1527,16 @@ function ServiceLineDetail({ payload, serviceLine, nav }) {
             empty="No process-zone signals yet."
             render={(item) => (
               <article className="list-item">
+                <button
+                  className="metric-action action-comment"
+                  onClick={() => nav.openMetricDialog({
+                    processZoneId: processZoneIdFromSignal(payload.processZones, item.id),
+                    metric: serviceSignalToMetric(item, summary.title),
+                  })}
+                  title="Comment or assign"
+                >
+                  <MessageSquare size={15} />
+                </button>
                 <strong>{item.id}</strong>
                 <span>{item.count} linked {isFso ? "studies" : "requirements"}</span>
                 <em>{item.share}% of service line</em>
@@ -1077,7 +1557,17 @@ function ServiceLineDetail({ payload, serviceLine, nav }) {
             <span>AI recommendation</span>
           </div>
           {records.map((item) => (
-            <div className={`study-row service-detail-row ${isFso ? "fso" : "fsp"}`} key={item.id}>
+            <div className={`study-row service-detail-row signal-card ${isFso ? "fso" : "fsp"}`} key={item.id}>
+              <button
+                className="metric-action action-comment"
+                onClick={() => nav.openMetricDialog({
+                  processZoneId: processZoneIdFromSignal(payload.processZones, item.process_zone_signal),
+                  metric: portfolioSignalToMetric(item, isFso ? "FSO study" : "FSP requirement"),
+                })}
+                title="Comment or assign"
+              >
+                <MessageSquare size={15} />
+              </button>
               <span>{isFso ? item.nct_id : item.id}</span>
               <span>
                 {item.title}
@@ -1249,9 +1739,14 @@ function Stack({ items, render, empty = "No records yet." }) {
   return <div className="stack">{items.map((item) => <React.Fragment key={item.id}>{render(item)}</React.Fragment>)}</div>;
 }
 
-function AlertItem({ item }) {
+function AlertItem({ item, onAction }) {
   return (
     <article className={`list-item severity-${item.severity?.toLowerCase()}`}>
+      {onAction && (
+        <button className="metric-action action-comment" onClick={onAction} title="Comment or assign">
+          <MessageSquare size={15} />
+        </button>
+      )}
       <strong>{item.title}</strong>
       <span>{item.message}</span>
       <em>{item.severity}</em>
@@ -1404,6 +1899,21 @@ function safeJson(value) {
   } catch {
     return [];
   }
+}
+
+function wordCount(value) {
+  return String(value || "").trim().split(/\s+/).filter(Boolean).length;
+}
+
+function displayName(email) {
+  const name = String(email || "Contributor").split("@")[0].replace(/[._-]+/g, " ");
+  return name.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function previewLines(value) {
+  const text = String(value || "").trim();
+  if (text.length <= 150) return text;
+  return `${text.slice(0, 150).trim()}...`;
 }
 
 createRoot(document.getElementById("root")).render(<App />);
