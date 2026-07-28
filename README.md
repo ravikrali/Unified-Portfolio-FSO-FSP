@@ -1,6 +1,6 @@
 # Clinical Portfolio Management Solutions Prototype
 
-Local full-stack prototype for a CRO hybrid FSO/FSP portfolio management application.
+Cloudflare-hosted prototype for a CRO hybrid FSO/FSP portfolio management application. It runs as a zero-server public demo on Cloudflare Pages and retains the full-stack Node service for local development.
 
 ## Stack
 
@@ -57,29 +57,53 @@ npm.cmd test
 npm.cmd audit --audit-level=moderate
 ```
 
-## Deploy Online
+## Cloudflare Pages Deployment
 
-This prototype can deploy as one Node web service. The Express server serves both:
+The production site is built as a static Vite application and served from Cloudflare's edge network. In this mode, `sql.js` loads a sanitized copy of the seeded SQLite database in each visitor's browser.
+
+Cloudflare Pages settings:
+
+```text
+Production branch: main
+Build command: npm run build:cloudflare
+Build output directory: dist
+Root directory: /
+```
+
+The project configuration is also captured in `wrangler.jsonc`. For a manual authenticated deployment:
+
+```powershell
+npm.cmd run deploy:cloudflare
+```
+
+Cloudflare demo behavior:
+
+- The published SQLite file contains seeded mock data only.
+- The Cloudflare build removes local outbox, KPI-comment, user, and non-demo engagement data before publishing.
+- Sign-ins, new portfolios, comments, and contact submissions are stored only in that visitor's browser.
+- Browser-local changes are not shared between visitors, and clearing site data resets them.
+- Assignment and contact email is not sent from the public demo.
+- The existing Express mode remains available for local development or a future shared-data backend.
+
+To test the Cloudflare build locally:
+
+```powershell
+npm.cmd run preview:cloudflare
+```
+
+Production domains:
+
+- `https://strathub360.com`
+- `https://www.strathub360.com`
+
+### Node web service (optional shared backend)
+
+The prototype can also deploy as one Node web service. The Express server serves both:
 
 - the API routes at `/api/*`
 - the built React app from `dist/`
 
-### Render
-
-1. Push this folder to a GitHub repository.
-2. In Render, create a new Web Service from that repository.
-3. Use these settings:
-
-```text
-Environment: Node
-Build Command: npm install && npm run build
-Start Command: npm start
-Health Check Path: /api/health
-```
-
-The included `render.yaml` contains the same settings if you prefer Render blueprints.
-
-Note: the current database is a local file at `data/portfolio.sqlite`. That is fine for a public demo/mock prototype, but hosted changes may reset on redeploy unless the hosting service provides persistent disk storage.
+The former Render and GitHub Pages deployment definitions have been removed. Cloudflare Pages is now the production deployment target.
 
 ## Architecture and Design Documentation
 
