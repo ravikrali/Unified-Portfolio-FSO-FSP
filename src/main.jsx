@@ -30,23 +30,7 @@ import {
   YAxis,
 } from "recharts";
 import "./styles.css";
-
-const api = {
-  async get(path) {
-    const res = await fetch(path);
-    if (!res.ok) throw new Error(`GET ${path} failed`);
-    return res.json();
-  },
-  async post(path, body) {
-    const res = await fetch(path, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`POST ${path} failed`);
-    return res.json();
-  },
-};
+import { api, isStaticMode } from "./api";
 
 const emptyPortfolio = { sponsors: [], studies: [], fspRequirements: [], source: "" };
 
@@ -313,7 +297,7 @@ function App() {
       {contactOpen && <ContactDialog onClose={() => setContactOpen(false)} />}
       <footer className="app-footer">
         <span>Clinical Portfolio Management Solutions</span>
-        <span>Local prototype with file-backed database</span>
+        <span>{isStaticMode ? "Public demo · changes stay in this browser" : "Local prototype with file-backed database"}</span>
       </footer>
     </div>
   );
@@ -744,7 +728,7 @@ function ContactDialog({ onClose }) {
   async function submit() {
     if (!canSubmit) return;
     const result = await api.post("/api/contact", { email, message });
-    setStatus(result.email ? `Message queued to ${result.email.recipient}.` : "Message submitted.");
+    setStatus(isStaticMode ? "Message saved in this browser; no email was sent." : result.email ? `Message queued to ${result.email.recipient}.` : "Message submitted.");
     setTimeout(onClose, 650);
   }
 
@@ -1694,7 +1678,7 @@ function MetricCommentDialog({ metric, processZoneId, portfolio, onClose, onSave
       assigneeEmail: assign ? email : "",
       author: "Organizer",
     });
-    setStatus(result.email ? `Saved and queued email notification to ${email}.` : "Saved.");
+    setStatus(isStaticMode && result.email ? "Saved locally; no email was sent from this public demo." : result.email ? `Saved and queued email notification to ${email}.` : "Saved.");
     setTimeout(onSaved, 450);
   }
 

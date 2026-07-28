@@ -1,14 +1,17 @@
 {
   "name": "rr-portfolio-management",
-  "version": "1.0.0",
-  "description": "Local prototype for Clinical Portfolio Management Solutions portfolio management web app.",
+  "version": "1.1.0",
+  "description": "Clinical Portfolio Management Solutions web app for Cloudflare Pages and local Node development.",
   "main": "server/server.js",
   "scripts": {
     "dev": "concurrently \"npm:dev:api\" \"npm:dev:web\"",
     "dev:api": "node server/server.js",
     "dev:web": "vite --host 127.0.0.1",
     "build": "vite build",
+    "build:cloudflare": "node scripts/copy-static-db.js && vite build --mode cloudflare",
+    "deploy:cloudflare": "npm run build:cloudflare && wrangler pages deploy dist --project-name strathub360",
     "preview": "vite preview --host 127.0.0.1",
+    "preview:cloudflare": "npm run build:cloudflare && wrangler pages dev dist",
     "start": "node server/server.js",
     "test": "node server/smoke-test.js"
   },
@@ -28,5 +31,8 @@
     "recharts": "^3.8.1",
     "sql.js": "^1.14.1",
     "vite": "^8.0.16"
+  },
+  "devDependencies": {
+    "wrangler": "^4.114.0"
   }
 }

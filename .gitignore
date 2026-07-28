@@ -1,5 +1,7 @@
 node_modules/
 dist/
+.wrangler/
+public/portfolio.sqlite
 *.log
 .env
 .env.*
