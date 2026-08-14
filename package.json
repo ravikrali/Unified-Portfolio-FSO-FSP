@@ -10,8 +10,6 @@
     "build": "vite build",
     "build:cloudflare": "node scripts/copy-static-db.js && vite build --mode cloudflare",
     "deploy:cloudflare": "npm run build:cloudflare && wrangler pages deploy dist --project-name strathub360",
-    "deploy:contact-worker": "wrangler deploy --config wrangler.contact.jsonc",
-    "dev:contact-worker": "wrangler dev --config wrangler.contact.jsonc",
     "preview": "vite preview --host 127.0.0.1",
     "preview:cloudflare": "npm run build:cloudflare && wrangler pages dev dist",
     "start": "node server/server.js",

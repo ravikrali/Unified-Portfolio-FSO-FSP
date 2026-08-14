@@ -82,17 +82,9 @@ Cloudflare demo behavior:
 - The Cloudflare build removes local outbox, KPI-comment, user, and non-demo engagement data before publishing.
 - Sign-ins, new portfolios, and comments are stored only in that visitor's browser.
 - Browser-local changes are not shared between visitors, and clearing site data resets them.
-- Contact requests are relayed server-side through FormSubmit's free AJAX service to `contact@r2dw.com`.
+- Contact requests are sent through FormSubmit's free AJAX service to `contact@r2dw.com` without opening the visitor's email application.
 - Assignment email is not sent from the public demo.
 - The existing Express mode remains available for local development or a future shared-data backend.
-
-The contact endpoint is a separate Worker routed only to `/api/contact` on the production domains. It validates requests and keeps the destination address fixed before relaying the message to FormSubmit. Deploy it after the Pages build with:
-
-```powershell
-npm.cmd run deploy:contact-worker
-```
-
-FormSubmit sends a one-time activation link to `contact@r2dw.com` when the endpoint receives its first submission. The mailbox owner must approve that link before subsequent contact requests are delivered.
 
 To test the Cloudflare build locally:
 

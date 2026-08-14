@@ -18,6 +18,31 @@ const serverApi = {
   },
 };
 
+const contactApi = {
+  async post(body) {
+    const subject = body.purpose === "deep-dive"
+      ? "StratHub360 deep dive session request"
+      : "StratHub360 contact request";
+    const formData = new URLSearchParams({
+      email: String(body.email || "").trim(),
+      message: String(body.message || "").trim(),
+      _subject: subject,
+      _template: "table",
+      _captcha: "false",
+    });
+    const res = await fetch("https://formsubmit.co/ajax/contact@r2dw.com", {
+      method: "POST",
+      headers: { Accept: "application/json" },
+      body: formData,
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok || payload.success === false || payload.success === "false") {
+      throw new Error(payload.message || "The email could not be sent right now. Please try again.");
+    }
+    return { ok: true };
+  },
+};
+
 export const isStaticMode = import.meta.env.VITE_STATIC_API === "true";
 const staticApi = isStaticMode ? createStaticApi() : null;
 
@@ -25,7 +50,7 @@ export const api = isStaticMode
   ? {
       get: staticApi.get,
       post(path, body) {
-        return path === "/api/contact" ? serverApi.post(path, body) : staticApi.post(path, body);
+        return path === "/api/contact" ? contactApi.post(body) : staticApi.post(path, body);
       },
     }
   : serverApi;
