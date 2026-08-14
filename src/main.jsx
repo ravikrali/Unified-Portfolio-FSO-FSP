@@ -33,11 +33,13 @@ import "./styles.css";
 import { api, isStaticMode } from "./api";
 
 const emptyPortfolio = { sponsors: [], studies: [], fspRequirements: [], source: "" };
+const CONTACT_EMAIL = "contact@r2dw.com";
+const DEEP_DIVE_MESSAGE = "I'd like to request a deep dive session for my organization.";
 
 const landingFaqs = [
   {
     question: "How do I start using the portfolio command center?",
-    answer: "Choose Get started to sign in locally, then open the mock portfolio or create a new engagement. The mock portfolio is the quickest way to explore the hybrid FSO-FSP workflows.",
+    answer: "Choose Get started to request a deep dive session with the StratHub360 team. To explore immediately, open the mock portfolio and review the hybrid FSO-FSP workflows.",
   },
   {
     question: "What does the Portfolio Health page show?",
@@ -178,7 +180,7 @@ function App() {
   const [activeServiceLine, setActiveServiceLine] = useState("fso");
   const [loading, setLoading] = useState(false);
   const [metricDialog, setMetricDialog] = useState(null);
-  const [contactOpen, setContactOpen] = useState(false);
+  const [contactRequest, setContactRequest] = useState(null);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -261,11 +263,11 @@ function App() {
         setView={goTo}
         canGoBack={viewHistory.length > 0 || (user && view !== "home")}
         goBack={goBack}
-        onContact={() => setContactOpen(true)}
+        onContact={() => setContactRequest({ purpose: "general" })}
       />
       {showAiSearch && <GlobalAiSearch />}
       {loading && <div className="loading-line" />}
-      {view === "landing" && <Landing onLogin={login} onMock={() => loadEngagement("eng-mock")} onNews={() => goTo("industryNews")} />}
+      {view === "landing" && <Landing onContact={() => setContactRequest({ purpose: "deep-dive" })} onMock={() => loadEngagement("eng-mock")} onNews={() => goTo("industryNews")} />}
       {view === "signin" && <SignIn onLogin={login} />}
       {view === "home" && (
         <Home
@@ -294,7 +296,7 @@ function App() {
           }}
         />
       )}
-      {contactOpen && <ContactDialog onClose={() => setContactOpen(false)} />}
+      {contactRequest && <ContactDialog purpose={contactRequest.purpose} onClose={() => setContactRequest(null)} />}
       <footer className="app-footer">
         <span>Clinical Portfolio Management Solutions</span>
         <span>{isStaticMode ? "Public demo · changes stay in this browser" : "Local prototype with file-backed database"}</span>
@@ -489,7 +491,7 @@ function PortfolioSignalSections({ portfolio, processZones = [], onAction }) {
   );
 }
 
-function Landing({ onLogin, onMock, onNews }) {
+function Landing({ onContact, onMock, onNews }) {
   return (
     <main className="landing">
       <section className="hero ai-saas-hero">
@@ -502,7 +504,7 @@ function Landing({ onLogin, onMock, onNews }) {
             platform so CRO leaders can manage operations at the portfolio level instead of chasing siloed workflows.
           </p>
           <div className="hero-actions">
-            <button className="button primary" onClick={() => onLogin()}>Get started</button>
+            <button className="button primary" onClick={onContact}>Get started</button>
             <button className="button secondary" onClick={onMock}>View Mock Portfolio</button>
             <button className="button ghost" onClick={onNews}>Industry News</button>
           </div>
@@ -719,17 +721,18 @@ function CreatePostDialog({ onClose, onCreate }) {
   );
 }
 
-function ContactDialog({ onClose }) {
+function ContactDialog({ purpose, onClose }) {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(purpose === "deep-dive" ? DEEP_DIVE_MESSAGE : "");
   const [status, setStatus] = useState("");
   const canSubmit = email.trim() && message.trim();
 
-  async function submit() {
+  function submit() {
     if (!canSubmit) return;
-    const result = await api.post("/api/contact", { email, message });
-    setStatus(isStaticMode ? "Message saved in this browser; no email was sent." : result.email ? `Message queued to ${result.email.recipient}.` : "Message submitted.");
-    setTimeout(onClose, 650);
+    const subject = purpose === "deep-dive" ? "StratHub360 deep dive session request" : "StratHub360 contact request";
+    const body = `Reply to: ${email.trim()}\n\n${message.trim()}`;
+    window.location.assign(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+    setStatus(`Your email app is opening with a message addressed to ${CONTACT_EMAIL}. Review it, then send.`);
   }
 
   return (
@@ -738,11 +741,11 @@ function ContactDialog({ onClose }) {
         <div className="dialog-header">
           <div>
             <p className="eyebrow">Contact Us</p>
-            <h2>Send a message to StratHub360</h2>
+            <h2>{purpose === "deep-dive" ? "Request a deep dive session" : "Send a message to StratHub360"}</h2>
           </div>
           <button className="icon-button" onClick={onClose}>x</button>
         </div>
-        <p className="dialog-context">Your message will be sent to contact@strathub360.com.</p>
+        <p className="dialog-context">Your email will be addressed to {CONTACT_EMAIL}.</p>
         <label>
           Email
           <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" />
@@ -754,7 +757,7 @@ function ContactDialog({ onClose }) {
         {status && <p className="dialog-status">{status}</p>}
         <div className="dialog-actions">
           <button className="button secondary" onClick={onClose}>Cancel</button>
-          <button className="button primary" onClick={submit} disabled={!canSubmit}>Send Email</button>
+          <button className="button primary" onClick={submit} disabled={!canSubmit}>Continue to Email</button>
         </div>
       </section>
     </div>
