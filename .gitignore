@@ -2,6 +2,7 @@ node_modules/
 dist/
 .wrangler/
 public/portfolio.sqlite
+worker-configuration.d.ts
 *.log
 .env
 .env.*

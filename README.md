@@ -82,9 +82,15 @@ Cloudflare demo behavior:
 - The Cloudflare build removes local outbox, KPI-comment, user, and non-demo engagement data before publishing.
 - Sign-ins, new portfolios, and comments are stored only in that visitor's browser.
 - Browser-local changes are not shared between visitors, and clearing site data resets them.
-- Contact requests open the visitor's email app with a message addressed to `contact@r2dw.com`; the visitor reviews and sends it from there.
+- Contact requests are sent server-side through a restricted Cloudflare email binding to `contact@r2dw.com`.
 - Assignment email is not sent from the public demo.
 - The existing Express mode remains available for local development or a future shared-data backend.
+
+The contact endpoint is a separate Worker routed only to `/api/contact` on the production domains because Pages projects do not support email bindings. Deploy it after the Pages build with:
+
+```powershell
+npm.cmd run deploy:contact-worker
+```
 
 To test the Cloudflare build locally:
 

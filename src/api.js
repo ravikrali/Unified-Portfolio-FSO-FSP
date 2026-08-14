@@ -12,10 +12,20 @@ const serverApi = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error(`POST ${path} failed`);
-    return res.json();
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(payload.error || `POST ${path} failed`);
+    return payload;
   },
 };
 
 export const isStaticMode = import.meta.env.VITE_STATIC_API === "true";
-export const api = isStaticMode ? createStaticApi() : serverApi;
+const staticApi = isStaticMode ? createStaticApi() : null;
+
+export const api = isStaticMode
+  ? {
+      get: staticApi.get,
+      post(path, body) {
+        return path === "/api/contact" ? serverApi.post(path, body) : staticApi.post(path, body);
+      },
+    }
+  : serverApi;
