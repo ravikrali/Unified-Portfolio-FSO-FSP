@@ -181,6 +181,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [metricDialog, setMetricDialog] = useState(null);
   const [contactRequest, setContactRequest] = useState(null);
+  const [contactConfirmation, setContactConfirmation] = useState("");
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -190,6 +191,12 @@ function App() {
   useEffect(() => {
     api.get("/api/bootstrap").then(setBootstrap).catch(console.error);
   }, []);
+
+  useEffect(() => {
+    if (!contactConfirmation) return undefined;
+    const timeoutId = window.setTimeout(() => setContactConfirmation(""), 10000);
+    return () => window.clearTimeout(timeoutId);
+  }, [contactConfirmation]);
 
   function goTo(nextView) {
     setView((current) => {
@@ -296,7 +303,17 @@ function App() {
           }}
         />
       )}
-      {contactRequest && <ContactDialog purpose={contactRequest.purpose} onClose={() => setContactRequest(null)} />}
+      {contactRequest && (
+        <ContactDialog
+          purpose={contactRequest.purpose}
+          onClose={() => setContactRequest(null)}
+          onSent={() => {
+            setContactRequest(null);
+            setContactConfirmation("Your email has been sent and will be answered as soon as possible.");
+          }}
+        />
+      )}
+      {contactConfirmation && <div className="contact-toast" role="status" aria-live="polite">{contactConfirmation}</div>}
       <footer className="app-footer">
         <span>Clinical Portfolio Management Solutions</span>
         <span>{isStaticMode ? "Public demo · changes stay in this browser" : "Local prototype with file-backed database"}</span>
@@ -721,7 +738,7 @@ function CreatePostDialog({ onClose, onCreate }) {
   );
 }
 
-function ContactDialog({ purpose, onClose }) {
+function ContactDialog({ purpose, onClose, onSent }) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState(purpose === "deep-dive" ? DEEP_DIVE_MESSAGE : "");
   const [status, setStatus] = useState("");
@@ -734,7 +751,7 @@ function ContactDialog({ purpose, onClose }) {
     setStatus("");
     try {
       await api.post("/api/contact", { email: email.trim(), message: message.trim(), purpose });
-      setStatus(`Email sent successfully to ${CONTACT_EMAIL}.`);
+      onSent();
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "The email could not be sent. Please try again.");
     } finally {
