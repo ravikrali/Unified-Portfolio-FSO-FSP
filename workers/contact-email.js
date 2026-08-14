@@ -59,6 +59,8 @@ export default {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/x-www-form-urlencoded",
+          Origin: requestUrl.origin,
+          Referer: `${requestUrl.origin}/`,
         },
         body: formData,
       });
