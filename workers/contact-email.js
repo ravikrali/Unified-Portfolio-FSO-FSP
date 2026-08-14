@@ -1,5 +1,5 @@
 const CONTACT_EMAIL = "contact@r2dw.com";
-const SENDER_EMAIL = "noreply@strathub360.com";
+const FORMSUBMIT_URL = `https://formsubmit.co/ajax/${CONTACT_EMAIL}`;
 const MAX_MESSAGE_LENGTH = 5000;
 
 function json(body, status = 200) {
@@ -9,18 +9,8 @@ function json(body, status = 200) {
   });
 }
 
-function escapeHtml(value) {
-  return value.replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-  })[character]);
-}
-
 export default {
-  async fetch(request, env) {
+  async fetch(request) {
     const requestUrl = new URL(request.url);
     if (request.method !== "POST" || requestUrl.pathname !== "/api/contact") {
       return json({ error: "Not found." }, 404);
@@ -55,19 +45,36 @@ export default {
     }
 
     const subject = isDeepDive ? "StratHub360 deep dive session request" : "StratHub360 contact request";
-    const text = `A visitor submitted a request through StratHub360.\n\nReply to: ${email}\n\nMessage:\n${message}`;
-    const html = `<p>A visitor submitted a request through StratHub360.</p><p><strong>Reply to:</strong> ${escapeHtml(email)}</p><p><strong>Message:</strong></p><p>${escapeHtml(message).replace(/\n/g, "<br>")}</p>`;
+    const formData = new URLSearchParams({
+      email,
+      message,
+      _subject: subject,
+      _template: "table",
+      _captcha: "false",
+    });
 
     try {
-      const result = await env.EMAIL.send({
-        to: CONTACT_EMAIL,
-        from: { email: SENDER_EMAIL, name: "StratHub360" },
-        replyTo: email,
-        subject,
-        text,
-        html,
+      const providerResponse = await fetch(FORMSUBMIT_URL, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formData,
       });
-      console.log(JSON.stringify({ event: "contact_email_sent", messageId: result.messageId }));
+
+      let providerResult = null;
+      try {
+        providerResult = await providerResponse.json();
+      } catch {
+        // The status code remains the source of truth if the provider omits JSON.
+      }
+
+      if (!providerResponse.ok || providerResult?.success === "false" || providerResult?.success === false) {
+        throw new Error(providerResult?.message || `FormSubmit returned ${providerResponse.status}`);
+      }
+
+      console.log(JSON.stringify({ event: "contact_email_accepted", provider: "formsubmit" }));
       return json({ ok: true });
     } catch (error) {
       console.error(JSON.stringify({

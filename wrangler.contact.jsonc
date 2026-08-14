@@ -4,13 +4,6 @@
   "main": "workers/contact-email.js",
   "compatibility_date": "2026-08-14",
   "compatibility_flags": ["nodejs_compat"],
-  "send_email": [
-    {
-      "name": "EMAIL",
-      "destination_address": "contact@r2dw.com",
-      "allowed_sender_addresses": ["noreply@strathub360.com"]
-    }
-  ],
   "routes": [
     { "pattern": "strathub360.com/api/contact", "zone_name": "strathub360.com" },
     { "pattern": "www.strathub360.com/api/contact", "zone_name": "strathub360.com" }
