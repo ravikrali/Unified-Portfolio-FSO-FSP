@@ -82,7 +82,7 @@ Cloudflare demo behavior:
 - The Cloudflare build removes local outbox, KPI-comment, user, and non-demo engagement data before publishing.
 - Sign-ins, new portfolios, and comments are stored only in that visitor's browser.
 - Browser-local changes are not shared between visitors, and clearing site data resets them.
-- Contact requests open the visitor's email app with a message addressed to `contact@r2dw.com`; the visitor reviews and sends it from there.
+- Contact requests are sent through FormSubmit's free AJAX service to `contact@r2dw.com` without opening the visitor's email application.
 - Assignment email is not sent from the public demo.
 - The existing Express mode remains available for local development or a future shared-data backend.
 

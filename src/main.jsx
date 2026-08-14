@@ -725,14 +725,21 @@ function ContactDialog({ purpose, onClose }) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState(purpose === "deep-dive" ? DEEP_DIVE_MESSAGE : "");
   const [status, setStatus] = useState("");
-  const canSubmit = email.trim() && message.trim();
+  const [sending, setSending] = useState(false);
+  const canSubmit = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && message.trim();
 
-  function submit() {
-    if (!canSubmit) return;
-    const subject = purpose === "deep-dive" ? "StratHub360 deep dive session request" : "StratHub360 contact request";
-    const body = `Reply to: ${email.trim()}\n\n${message.trim()}`;
-    window.location.assign(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
-    setStatus(`Your email app is opening with a message addressed to ${CONTACT_EMAIL}. Review it, then send.`);
+  async function submit() {
+    if (!canSubmit || sending) return;
+    setSending(true);
+    setStatus("");
+    try {
+      await api.post("/api/contact", { email: email.trim(), message: message.trim(), purpose });
+      setStatus(`Email sent successfully to ${CONTACT_EMAIL}.`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "The email could not be sent. Please try again.");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -748,7 +755,7 @@ function ContactDialog({ purpose, onClose }) {
         <p className="dialog-context">Your email will be addressed to {CONTACT_EMAIL}.</p>
         <label>
           Email
-          <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" />
+          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" />
         </label>
         <label>
           Message
@@ -757,7 +764,7 @@ function ContactDialog({ purpose, onClose }) {
         {status && <p className="dialog-status">{status}</p>}
         <div className="dialog-actions">
           <button className="button secondary" onClick={onClose}>Cancel</button>
-          <button className="button primary" onClick={submit} disabled={!canSubmit}>Continue to Email</button>
+          <button className="button primary" onClick={submit} disabled={!canSubmit || sending}>{sending ? "Sending..." : "Send Email"}</button>
         </div>
       </section>
     </div>
