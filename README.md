@@ -80,9 +80,10 @@ Cloudflare demo behavior:
 
 - The published SQLite file contains seeded mock data only.
 - The Cloudflare build removes local outbox, KPI-comment, user, and non-demo engagement data before publishing.
-- Sign-ins, new portfolios, comments, and contact submissions are stored only in that visitor's browser.
+- Sign-ins, new portfolios, and comments are stored only in that visitor's browser.
 - Browser-local changes are not shared between visitors, and clearing site data resets them.
-- Assignment and contact email is not sent from the public demo.
+- Contact requests open the visitor's email app with a message addressed to `contact@r2dw.com`; the visitor reviews and sends it from there.
+- Assignment email is not sent from the public demo.
 - The existing Express mode remains available for local development or a future shared-data backend.
 
 To test the Cloudflare build locally:

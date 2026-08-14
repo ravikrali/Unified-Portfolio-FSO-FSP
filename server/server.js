@@ -172,11 +172,11 @@ app.post("/api/contact", async (req, res) => {
   const body = `Contact request submitted from the web app.\n\nSender: ${senderEmail}\n\nMessage:\n${message}`;
   await run(`
     INSERT INTO email_outbox VALUES (
-      '${q(emailId)}','contact-us','contact@strathub360.com',
+      '${q(emailId)}','contact-us','contact@r2dw.com',
       '${q(subject)}','${q(body)}','Queued - SMTP not configured','${q(now)}'
     )
   `);
-  res.json({ ok: true, email: { id: emailId, recipient: "contact@strathub360.com", status: "Queued - SMTP not configured" } });
+  res.json({ ok: true, email: { id: emailId, recipient: "contact@r2dw.com", status: "Queued - SMTP not configured" } });
 });
 
 app.post("/api/requirements", async (req, res) => {

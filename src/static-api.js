@@ -157,9 +157,9 @@ async function post(path, body = {}) {
 
   if (path === "/api/contact") {
     const emailId = id("email");
-    database.run("INSERT INTO email_outbox (id,engagement_id,recipient_email,subject,body,status,created_at) VALUES (?,?,?,?,?,?,?)", [emailId, "contact-us", "contact@strathub360.com", `Contact request from ${body.email || "web app visitor"}`, String(body.message || ""), "Saved in this browser - no email service configured", now]);
+    database.run("INSERT INTO email_outbox (id,engagement_id,recipient_email,subject,body,status,created_at) VALUES (?,?,?,?,?,?,?)", [emailId, "contact-us", "contact@r2dw.com", `Contact request from ${body.email || "web app visitor"}`, String(body.message || ""), "Saved in this browser - no email service configured", now]);
     save(database);
-    return { ok: true, email: { id: emailId, recipient: "contact@strathub360.com", status: "Saved locally" } };
+    return { ok: true, email: { id: emailId, recipient: "contact@r2dw.com", status: "Saved locally" } };
   }
 
   if (path === "/api/kpi-comments") {
